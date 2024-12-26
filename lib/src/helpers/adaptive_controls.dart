@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../gsshopLive/gsshopLive_controls.dart';
+import '../gsshop_live/gsshop_live_controls.dart';
 import '../cupertino/cupertino_controls.dart';
 import '../material/material_controls.dart';
 import '../../src/chewie_player.dart';
 
 class AdaptiveControls extends StatelessWidget {
   const AdaptiveControls({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

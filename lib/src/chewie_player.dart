@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:chewie/src/chewie_progress_colors.dart';
 import 'package:chewie/src/models/option_item.dart';
@@ -49,6 +50,7 @@ class ChewieState extends State<Chewie> {
   bool _isFullScreen = false;
 
   bool get isControllerFullScreen => widget.controller.isFullScreen;
+  bool get isControllerHideStuff => widget.controller.hideStuff;
   late PlayerNotifier notifier;
 
   @override
@@ -86,6 +88,10 @@ class ChewieState extends State<Chewie> {
         rootNavigator: widget.controller.useRootNavigator,
       ).pop();
       _isFullScreen = false;
+    }
+    // log('this is hide stuff44 : ${isControllerHideStuff} ${notifier.hideStuff}');
+    if (notifier.hideStuff != isControllerHideStuff) {
+      notifier.hideStuff = isControllerHideStuff;
     }
   }
 
@@ -629,6 +635,10 @@ class ChewieController extends ChangeNotifier {
 
   bool get isPlaying => videoPlayerController.value.isPlaying;
 
+  bool _hideStuff = false;
+
+  bool get hideStuff => _hideStuff;
+
   Future<dynamic> _initialize() async {
     await videoPlayerController.setLooping(looping);
 
@@ -659,6 +669,16 @@ class ChewieController extends ChangeNotifier {
       enterFullScreen();
       videoPlayerController.removeListener(_fullScreenListener);
     }
+  }
+
+  void showPlayerControl() {
+    _hideStuff = false;
+    notifyListeners();
+  }
+
+  void hidePlayerControl() {
+    _hideStuff = true;
+    notifyListeners();
   }
 
   void enterFullScreen() {
