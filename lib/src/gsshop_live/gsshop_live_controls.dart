@@ -33,7 +33,6 @@ class _MaterialControlsState extends State<GsshopLiveControls>
   Timer? _hideTimer;
   Timer? _initTimer;
   Timer? _showAfterExpandCollapseTimer;
-  bool _displayTapped = false;
   Timer? _bufferingDisplayTimer;
 
   final barHeight = 48.0 * 1.5;
@@ -72,25 +71,22 @@ class _MaterialControlsState extends State<GsshopLiveControls>
         builder: (context, value, _) {
           return value
               ? Container()
-              : MouseRegion(
-                  onHover: (_) {
+              : GestureDetector(
+                  onTap: () {
                     _cancelAndRestartTimer();
                   },
-                  child: GestureDetector(
-                    onTap: () => _cancelAndRestartTimer(),
-                    child: AbsorbPointer(
-                      absorbing: notifier.hideStuff,
-                      child: Stack(
-                        children: [
-                          _buildHitArea(),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              _buildBottomBar(context),
-                            ],
-                          ),
-                        ],
-                      ),
+                  child: AbsorbPointer(
+                    absorbing: notifier.hideStuff,
+                    child: Stack(
+                      children: [
+                        _buildHitArea(),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            _buildBottomBar(context),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -131,7 +127,7 @@ class _MaterialControlsState extends State<GsshopLiveControls>
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 200),
       child: SafeArea(
         bottom: chewieController.isFullScreen,
         minimum: chewieController.controlsSafeAreaMinimum,
@@ -192,7 +188,7 @@ class _MaterialControlsState extends State<GsshopLiveControls>
       },
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 150),
         child: Container(
           height: 36,
           width: 36,
@@ -224,7 +220,7 @@ class _MaterialControlsState extends State<GsshopLiveControls>
       onTap: _onExpandCollapse,
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 200),
         child: Container(
           width: 36.0,
           height: 36.0,
@@ -256,23 +252,13 @@ class _MaterialControlsState extends State<GsshopLiveControls>
 
     return GestureDetector(
       onTap: () {
-        if (_latestValue.isPlaying) {
-          if (_displayTapped) {
-            notifier.hideStuff = true;
-          } else {
-            _cancelAndRestartTimer();
-          }
-        } else {
-          setState(() {
-            notifier.hideStuff = true;
-          });
-        }
+        notifier.hideStuff = true;
       },
       child: AnimatedOpacity(
         opacity: showPlayButton ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 200),
         child: Container(
-          color: Colors.black.withAlpha(97),
+          color: const Color.fromARGB(38, 0, 0, 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -330,12 +316,12 @@ class _MaterialControlsState extends State<GsshopLiveControls>
 
   void _cancelAndRestartTimer() {
     _hideTimer?.cancel();
-    _startHideTimer();
 
-    setState(() {
-      notifier.hideStuff = false;
-      _displayTapped = true;
-    });
+    if (controller.value.isPlaying) {
+      _startHideTimer();
+    }
+
+    notifier.hideStuff = false;
   }
 
   Future<void> _initialize() async {
@@ -349,63 +335,61 @@ class _MaterialControlsState extends State<GsshopLiveControls>
 
     if (chewieController.showControlsOnInitialize) {
       _initTimer = Timer(const Duration(milliseconds: 200), () {
-        setState(() {
-          notifier.hideStuff = false;
-        });
+        notifier.hideStuff = false;
       });
     }
   }
 
   void _onExpandCollapse() {
-    setState(() {
-      notifier.hideStuff = true;
-      var isChange = chewieController.toggleFullScreenFunction();
-      if (isChange) {
-        chewieController.toggleFullScreen();
+    if (mounted) {
+      setState(() {
+        notifier.hideStuff = true;
+        var isChange = chewieController.toggleFullScreenFunction();
+        if (isChange) {
+          chewieController.toggleFullScreen();
 
-        _showAfterExpandCollapseTimer =
-            Timer(const Duration(milliseconds: 300), () {
-          setState(() {
+          _showAfterExpandCollapseTimer =
+              Timer(const Duration(milliseconds: 200), () {
             _cancelAndRestartTimer();
           });
-        });
-      }
-    });
+        }
+      });
+    }
   }
 
   void _playPause() {
     final isFinished = _latestValue.position >= _latestValue.duration;
 
-    setState(() {
-      if (controller.value.isPlaying) {
-        notifier.hideStuff = false;
-        _hideTimer?.cancel();
-        controller.pause();
-        if (chewieController.pauseFunction != null) {
-          chewieController.pauseFunction!();
-        }
-        // notifier.hideStuff = true;
-      } else {
-        _cancelAndRestartTimer();
-
-        if (!controller.value.isInitialized) {
-          controller.initialize().then((_) {
-            controller.play();
+    if (mounted) {
+      setState(() {
+        if (controller.value.isPlaying) {
+          notifier.hideStuff = false;
+          _hideTimer?.cancel();
+          controller.pause();
+          if (chewieController.pauseFunction != null) {
+            chewieController.pauseFunction!();
+          }
+        } else {
+          if (!controller.value.isInitialized) {
+            controller.initialize().then((_) {
+              controller.play();
+              if (chewieController.playFunction != null) {
+                chewieController.playFunction!();
+              }
+            });
+          } else {
+            if (isFinished) {
+              controller.seekTo(Duration.zero);
+            }
             if (chewieController.playFunction != null) {
               chewieController.playFunction!();
             }
-          });
-        } else {
-          if (isFinished) {
-            controller.seekTo(Duration.zero);
+            controller.play();
           }
-          if (chewieController.playFunction != null) {
-            chewieController.playFunction!();
-          }
-          controller.play();
+          _startHideTimer();
         }
-      }
-    });
+      });
+    }
   }
 
   void _startHideTimer() {
@@ -413,9 +397,7 @@ class _MaterialControlsState extends State<GsshopLiveControls>
         ? ChewieController.defaultHideControlsTimer
         : chewieController.hideControlsTimer;
     _hideTimer = Timer(hideControlsTimer, () {
-      setState(() {
-        notifier.hideStuff = true;
-      });
+      notifier.hideStuff = true;
     });
   }
 
@@ -441,8 +423,10 @@ class _MaterialControlsState extends State<GsshopLiveControls>
       }
     } else {}
 
-    setState(() {
-      _latestValue = controller.value;
-    });
+    if (mounted) {
+      setState(() {
+        _latestValue = controller.value;
+      });
+    }
   }
 }
