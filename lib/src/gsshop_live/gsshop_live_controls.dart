@@ -423,6 +423,11 @@ class _MaterialControlsState extends State<GsshopLiveControls>
       }
     } else {}
 
+    if (chewieController.hideStuff == false &&
+        chewieController.isPlaying == false) {
+      _hideTimer?.cancel();
+    }
+
     if (mounted) {
       setState(() {
         _latestValue = controller.value;
