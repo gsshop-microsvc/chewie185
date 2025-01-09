@@ -384,9 +384,10 @@ class _MaterialControlsState extends State<GsshopLiveControls>
             if (chewieController.playFunction != null) {
               chewieController.playFunction!();
             }
-            controller.play();
+            controller.play().then((e) {
+              _startHideTimer();
+            });
           }
-          _startHideTimer();
         }
       });
     }
