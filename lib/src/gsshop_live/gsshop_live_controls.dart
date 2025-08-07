@@ -341,7 +341,8 @@ class _MaterialControlsState extends State<GsshopLiveControls>
     if (mounted) {
       setState(() {
         notifier.hideStuff = true;
-        var isChange = chewieController.toggleFullScreenFunction();
+        var isChange =
+            chewieController.toggleFullScreenFunction?.call() ?? false;
         if (isChange) {
           chewieController.toggleFullScreen();
 
