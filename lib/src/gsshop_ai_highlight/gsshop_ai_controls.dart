@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../chewie_player.dart';
-import 'material_progress_bar.dart';
+import 'gsshop_ai_progress_bar.dart';
 
 class GSSHOPAiHighlightControls extends StatefulWidget {
   const GSSHOPAiHighlightControls({
@@ -119,6 +119,8 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
         if (!chewieController.isLive && !chewieController.isFullScreen)
           Positioned(
             bottom: 0.0,
+            left: 0,
+            right: 0,
             child: _buildProgressBar(),
           ),
       ],
@@ -557,10 +559,8 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
     return Container(
       height: 32.0,
       alignment: Alignment.bottomCenter,
-      padding: const EdgeInsets.only(
+      padding: EdgeInsets.only(
         top: 0,
-        left: 0,
-        right: 0,
         bottom: 0,
       ),
       child: GSShopAiHighlightVideoProgressBar(
