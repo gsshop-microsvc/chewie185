@@ -99,11 +99,26 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
                     //   )
                     // else
                     _buildHitArea(),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        _buildBottomBar(context),
-                      ],
+
+                    if (chewieController.leftTime == null ||
+                        chewieController.leftTime == '') ...[
+                      Positioned(
+                        left: 8.0,
+                        bottom: chewieController.isFullScreen ? 34.0 : 8.0,
+                        child: _buildLeftTime(),
+                      )
+                    ],
+
+                    Positioned(
+                      right: 4.0,
+                      bottom: chewieController.isFullScreen ? 34.0 : 8.0,
+                      child: Row(
+                        children: [
+                          _buildMuteButton(controller),
+                          if (chewieController.allowFullScreen)
+                            _buildExpandButton(),
+                        ],
+                      ),
                     ),
 
                     if (_dragging &&
@@ -116,13 +131,12 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
             ),
           ),
         ),
-        if (!chewieController.isLive && !chewieController.isFullScreen)
-          Positioned(
-            bottom: 0.0,
-            left: 0,
-            right: 0,
-            child: _buildProgressBar(),
-          ),
+        Positioned(
+          bottom: 0.0,
+          left: 0,
+          right: 0,
+          child: _buildProgressBar(),
+        ),
       ],
     );
   }
@@ -154,67 +168,42 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
     super.didChangeDependencies();
   }
 
-  AnimatedOpacity _buildBottomBar(
-    BuildContext context,
-  ) {
-    final iconColor = Theme.of(context).textTheme.labelLarge!.color;
+  // AnimatedOpacity _buildBottomBar(
+  //   BuildContext context,
+  // ) {
+  //   final iconColor = Theme.of(context).textTheme.labelLarge!.color;
 
-    return AnimatedOpacity(
-      opacity: notifier.hideStuff ? 0.0 : 1.0,
-      duration: const Duration(milliseconds: 300),
-      child: SafeArea(
-        bottom: chewieController.isFullScreen,
-        minimum: chewieController.controlsSafeAreaMinimum,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Flexible(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  if (chewieController.leftTime == null ||
-                      chewieController.leftTime == '') ...[
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    _buildPosition(iconColor),
-                  ],
-
-                  const Spacer(),
-                  // if (chewieController.isLive)
-                  //   const Expanded(child: Text('LIVE'))
-                  // else
-                  //   _buildPosition(iconColor),
-                  if (chewieController.allowMuting)
-                    _buildMuteButton(controller),
-
-                  if (chewieController.allowFullScreen) _buildExpandButton(),
-
-                  Container(
-                    width: 8.0,
-                  ),
-                ],
-              ),
-            ),
-            if (!chewieController.isLive && chewieController.isFullScreen)
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: 0.0,
-                  right: 8.0,
-                  left: 8.0,
-                ),
-                child: _buildProgressBar(),
-              ),
-            SizedBox(
-              height: chewieController.isFullScreen ? 8.0 : 4.0,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return AnimatedOpacity(
+  //     opacity: notifier.hideStuff ? 0.0 : 1.0,
+  //     duration: const Duration(milliseconds: 300),
+  //     child: SafeArea(
+  //       bottom: chewieController.isFullScreen,
+  //       minimum: chewieController.controlsSafeAreaMinimum,
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         mainAxisAlignment: MainAxisAlignment.end,
+  //         children: [
+  //           Flexible(
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.start,
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children: <Widget>[
+  //                 if (chewieController.leftTime == null ||
+  //                     chewieController.leftTime == '') ...[
+  //                   const SizedBox(
+  //                     width: 10,
+  //                   ),
+  //                   _buildPosition(iconColor),
+  //                   const Spacer(),
+  //                 ],
+  //               ],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   GestureDetector _buildMuteButton(
     VideoPlayerController controller,
@@ -270,29 +259,33 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
   GestureDetector _buildExpandButton() {
     return GestureDetector(
       onTap: _onExpandCollapse,
-      child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: Container(
-          width: 36.0,
-          height: 36.0,
-          color: const Color.fromARGB(0, 255, 255, 255),
-          child: Center(
-            child: chewieController.isFullScreen
-                ? SvgPicture.asset(
-                    'assets/svg/icon/player/zoom_out.svg',
-                    colorFilter:
-                        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                    width: 20,
-                    height: 20,
-                  )
-                : SvgPicture.asset(
-                    'assets/svg/icon/player/zoom_in.svg',
-                    colorFilter:
-                        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                    width: 20,
-                    height: 20,
-                  ),
+      child: Container(
+        width: 36.0,
+        height: 36.0,
+        color: const Color.fromARGB(0, 255, 255, 255),
+        child: AnimatedOpacity(
+          opacity: notifier.hideStuff ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 300),
+          child: Container(
+            width: 36.0,
+            height: 36.0,
+            child: Center(
+              child: chewieController.isFullScreen
+                  ? SvgPicture.asset(
+                      'assets/svg/icon/player/zoom_out.svg',
+                      colorFilter:
+                          const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      width: 20,
+                      height: 20,
+                    )
+                  : SvgPicture.asset(
+                      'assets/svg/icon/player/zoom_in.svg',
+                      colorFilter:
+                          const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      width: 20,
+                      height: 20,
+                    ),
+            ),
           ),
         ),
       ),
@@ -364,35 +357,42 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
     }
   }
 
-  Widget _buildPosition(Color? iconColor) {
+  Widget _buildLeftTime() {
     final position = _latestValue.position;
     final duration = _latestValue.duration;
 
     final fontSize = chewieController.isFullScreen ? 14.0 : 13.0;
 
-    return Padding(
-      padding: chewieController.isFullScreen
-          ? EdgeInsets.only(
-              top: 16.0,
-            )
-          : EdgeInsets.only(),
-      child: RichText(
-        text: TextSpan(
-          text: '${formatDuration(position)} ',
-          children: <InlineSpan>[
-            TextSpan(
-              text: '/ ${formatDuration(duration)}',
-              style: TextStyle(
-                fontSize: fontSize,
-                color: Colors.white.withOpacity(.75),
-                fontWeight: FontWeight.normal,
+    return AnimatedOpacity(
+      opacity: notifier.hideStuff ? 0.0 : 1.0,
+      duration: const Duration(milliseconds: 300),
+      child: Padding(
+        padding: chewieController.isFullScreen
+            ? const EdgeInsets.only(
+                top: 16.0,
+                bottom: 8.0,
+              )
+            : const EdgeInsets.only(
+                bottom: 8.0,
               ),
-            )
-          ],
-          style: TextStyle(
-            fontSize: fontSize,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+        child: RichText(
+          text: TextSpan(
+            text: '${formatDuration(position)} ',
+            children: <InlineSpan>[
+              TextSpan(
+                text: '/ ${formatDuration(duration)}',
+                style: TextStyle(
+                  fontSize: fontSize,
+                  color: Colors.white.withOpacity(.75),
+                  fontWeight: FontWeight.normal,
+                ),
+              )
+            ],
+            style: TextStyle(
+              fontSize: fontSize,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -447,15 +447,6 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
 
     if (controller.value.isPlaying || chewieController.autoPlay) {
       _startHideTimer();
-    }
-
-    if (chewieController.showControlsOnInitialize) {
-      _initTimer = Timer(const Duration(milliseconds: 1000), () {
-        setState(() {
-          notifier.hideStuff = false;
-          _startHideTimer();
-        });
-      });
     }
   }
 
@@ -559,10 +550,17 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
     return Container(
       height: 32.0,
       alignment: Alignment.bottomCenter,
-      padding: EdgeInsets.only(
-        top: 0,
-        bottom: 0,
-      ),
+      padding: chewieController.isFullScreen
+          ? const EdgeInsets.only(
+              top: 0,
+              bottom: 20,
+              right: 8,
+              left: 8,
+            )
+          : const EdgeInsets.only(
+              top: 0,
+              bottom: 0,
+            ),
       child: GSShopAiHighlightVideoProgressBar(
         controller,
         onDragStart: () {
