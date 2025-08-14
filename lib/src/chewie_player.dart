@@ -714,9 +714,9 @@ class ChewieController extends ChangeNotifier {
 
   void toggleFullScreen() {
     if (_isFullScreen) {
-      enterFullScreenFunction?.call();
-    } else {
       exitFullScreenFunction?.call();
+    } else {
+      enterFullScreenFunction?.call();
     }
 
     _isFullScreen = !_isFullScreen;
