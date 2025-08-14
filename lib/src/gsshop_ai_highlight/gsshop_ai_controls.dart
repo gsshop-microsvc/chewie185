@@ -481,10 +481,10 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
   }
 
   void _startHideTimer() {
-    final hideControlsTimer = chewieController.hideControlsTimer.isNegative
-        ? ChewieController.defaultHideControlsTimer
-        : chewieController.hideControlsTimer;
-    _hideTimer = Timer(hideControlsTimer, () {
+    // final hideControlsTimer = chewieController.hideControlsTimer.isNegative
+    //     ? ChewieController.defaultHideControlsTimer
+    //     : chewieController.hideControlsTimer;
+    _hideTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           notifier.hideStuff = true;
