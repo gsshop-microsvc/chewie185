@@ -89,9 +89,10 @@ class ChewieState extends State<Chewie> {
       ).pop();
       _isFullScreen = false;
     }
-    // log('this is hide stuff44 : ${isControllerHideStuff} ${notifier.hideStuff}');
     if (notifier.hideStuff != isControllerHideStuff) {
       notifier.hideStuff = isControllerHideStuff;
+    } else {
+      notifier.hideStuff = true;
     }
   }
 

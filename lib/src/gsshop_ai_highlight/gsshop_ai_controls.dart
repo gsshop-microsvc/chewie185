@@ -42,6 +42,7 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
   bool _displayTapped = false;
   bool isCompleted = false;
   bool _displayBufferingIndicator = false;
+  bool _fullScreenProgressTouch = false;
 
   final double barHeight = 48.0 * 1.5;
   final double marginSize = 5.0;
@@ -60,6 +61,12 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
   @override
   Widget build(BuildContext context) {
     notifier = Provider.of<PlayerNotifier>(context, listen: true);
+    if (notifier.hideStuff) {
+      _fullScreenProgressTouch = true;
+    } else {
+      _fullScreenProgressTouch = false;
+    }
+
     if (_latestValue.hasError) {
       return chewieController.errorBuilder?.call(
             context,
@@ -539,46 +546,49 @@ class _GSSHOPAiHighlightControlsState extends State<GSSHOPAiHighlightControls>
               top: 0,
               bottom: 0,
             ),
-      child: GSShopAiHighlightVideoProgressBar(
-        controller,
-        onDragStart: () {
-          setState(() {
-            _dragging = true;
-          });
+      child: AbsorbPointer(
+        absorbing: _fullScreenProgressTouch,
+        child: GSShopAiHighlightVideoProgressBar(
+          controller,
+          onDragStart: () {
+            setState(() {
+              _dragging = true;
+            });
 
-          _hideTimer?.cancel();
-        },
-        onDragUpdate: (DragUpdateDetails details) {
-          final position = context.calcRelativePosition(
-            controller.value.duration,
-            details.globalPosition,
-          );
+            _hideTimer?.cancel();
+          },
+          onDragUpdate: (DragUpdateDetails details) {
+            final position = context.calcRelativePosition(
+              controller.value.duration,
+              details.globalPosition,
+            );
 
-          setState(() {
-            _dragPosition = position;
-            _dragGlobalPosition = details.globalPosition;
-          });
+            setState(() {
+              _dragPosition = position;
+              _dragGlobalPosition = details.globalPosition;
+            });
 
-          _hideTimer?.cancel();
-        },
-        onDragEnd: () {
-          setState(() {
-            _dragging = false;
-            _dragPosition = null;
-            _dragGlobalPosition = null;
-          });
+            _hideTimer?.cancel();
+          },
+          onDragEnd: () {
+            setState(() {
+              _dragging = false;
+              _dragPosition = null;
+              _dragGlobalPosition = null;
+            });
 
-          _startHideTimer();
-        },
-        colors: chewieController.materialProgressColors ??
-            ChewieProgressColors(
-              playedColor: Theme.of(context).colorScheme.secondary,
-              handleColor: Theme.of(context).colorScheme.secondary,
-              bufferedColor: Color(0xffafb1c0),
-              backgroundColor: Color(0xffeaecf5),
-            ),
-        isHandleVisible: !notifier.hideStuff || _dragging,
-        alwaysDraggable: true,
+            _startHideTimer();
+          },
+          colors: chewieController.materialProgressColors ??
+              ChewieProgressColors(
+                playedColor: Theme.of(context).colorScheme.secondary,
+                handleColor: Theme.of(context).colorScheme.secondary,
+                bufferedColor: Color(0xffafb1c0),
+                backgroundColor: Color(0xffeaecf5),
+              ),
+          isHandleVisible: !notifier.hideStuff || _dragging,
+          alwaysDraggable: true,
+        ),
       ),
     );
   }
