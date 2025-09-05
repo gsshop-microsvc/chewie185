@@ -4,7 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class PlayerWithControls extends StatelessWidget {
-  const PlayerWithControls({super.key});
+  const PlayerWithControls({
+    super.key,
+    this.innerBottomPadding = 0.0,
+  });
+
+  final double? innerBottomPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -33,18 +38,23 @@ class PlayerWithControls extends StatelessWidget {
     ) {
       return Stack(
         children: <Widget>[
-          if (chewieController.placeholder != null)
+          if (chewieController.placeholder != null &&
+              chewieController.isFullScreen == false)
             chewieController.placeholder!,
-          InteractiveViewer(
-            transformationController: chewieController.transformationController,
-            maxScale: chewieController.maxScale,
-            panEnabled: chewieController.zoomAndPan,
-            scaleEnabled: chewieController.zoomAndPan,
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: chewieController.aspectRatio ??
-                    chewieController.videoPlayerController.value.aspectRatio,
-                child: VideoPlayer(chewieController.videoPlayerController),
+          Padding(
+            padding: EdgeInsets.only(bottom: innerBottomPadding ?? 0.0),
+            child: InteractiveViewer(
+              transformationController:
+                  chewieController.transformationController,
+              maxScale: chewieController.maxScale,
+              panEnabled: chewieController.zoomAndPan,
+              scaleEnabled: chewieController.zoomAndPan,
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: chewieController.aspectRatio ??
+                      chewieController.videoPlayerController.value.aspectRatio,
+                  child: VideoPlayer(chewieController.videoPlayerController),
+                ),
               ),
             ),
           ),
@@ -70,6 +80,7 @@ class PlayerWithControls extends StatelessWidget {
           //       ),
           //     ),
           //   ),
+
           if (!chewieController.isFullScreen)
             buildControls(context, chewieController)
           else

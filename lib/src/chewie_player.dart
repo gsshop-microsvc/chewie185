@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:chewie/src/chewie_progress_colors.dart';
 import 'package:chewie/src/models/option_item.dart';
@@ -25,6 +24,7 @@ enum PlayerType {
   material,
   cupertino,
   gsshopLive,
+  gsshopAiHighlight,
 }
 
 /// A Video Player with Material and Cupertino skins.
@@ -89,9 +89,10 @@ class ChewieState extends State<Chewie> {
       ).pop();
       _isFullScreen = false;
     }
-    // log('this is hide stuff44 : ${isControllerHideStuff} ${notifier.hideStuff}');
     if (notifier.hideStuff != isControllerHideStuff) {
       notifier.hideStuff = isControllerHideStuff;
+    } else {
+      notifier.hideStuff = true;
     }
   }
 
@@ -101,7 +102,9 @@ class ChewieState extends State<Chewie> {
       controller: widget.controller,
       child: ChangeNotifierProvider<PlayerNotifier>.value(
         value: notifier,
-        builder: (context, w) => const PlayerWithControls(),
+        builder: (context, w) => PlayerWithControls(
+          innerBottomPadding: widget.controller.innerBottomPadding,
+        ),
       ),
     );
   }
@@ -321,12 +324,15 @@ class ChewieController extends ChangeNotifier {
     this.controlsSafeAreaMinimum = EdgeInsets.zero,
     this.leftTime,
     this.miniPlayerNotifier,
-    required this.playFunction,
-    required this.pauseFunction,
-    required this.toggleFullScreenFunction,
-    required this.volumeOnFunction,
-    required this.volumeOffFunction,
+    this.playFunction,
+    this.pauseFunction,
+    this.toggleFullScreenFunction,
+    this.volumeOnFunction,
+    this.volumeOffFunction,
+    this.enterFullScreenFunction,
+    this.exitFullScreenFunction,
     this.playerType = PlayerType.gsshopLive,
+    this.innerBottomPadding,
   }) : assert(
           playbackSpeeds.every((speed) => speed > 0),
           'The playbackSpeeds values must all be greater than 0',
@@ -384,6 +390,8 @@ class ChewieController extends ChangeNotifier {
     bool Function()? toggleFullScreenFunction,
     VoidCallback? volumeOnFunction,
     VoidCallback? volumeOffFunction,
+    VoidCallback? enterFullScreenFunction,
+    VoidCallback? exitFullScreenFunction,
     PlayerType? playerType,
     Widget Function(
       BuildContext,
@@ -391,6 +399,7 @@ class ChewieController extends ChangeNotifier {
       Animation<double>,
       ChewieControllerProvider,
     )? routePageBuilder,
+    double? innerBottomPadding,
   }) {
     return ChewieController(
       draggableProgressBar: draggableProgressBar ?? this.draggableProgressBar,
@@ -453,7 +462,12 @@ class ChewieController extends ChangeNotifier {
           toggleFullScreenFunction ?? this.toggleFullScreenFunction,
       volumeOnFunction: volumeOnFunction ?? this.volumeOnFunction,
       volumeOffFunction: volumeOffFunction ?? this.volumeOffFunction,
+      enterFullScreenFunction:
+          enterFullScreenFunction ?? this.enterFullScreenFunction,
+      exitFullScreenFunction:
+          exitFullScreenFunction ?? this.exitFullScreenFunction,
       playerType: playerType ?? this.playerType,
+      innerBottomPadding: innerBottomPadding ?? this.innerBottomPadding,
     );
   }
 
@@ -597,10 +611,10 @@ class ChewieController extends ChangeNotifier {
   final List<DeviceOrientation>? deviceOrientationsOnEnterFullScreen;
 
   /// Defines the system overlays visible after exiting fullscreen
-  final List<SystemUiOverlay> systemOverlaysAfterFullScreen;
+  List<SystemUiOverlay> systemOverlaysAfterFullScreen;
 
   /// Defines the set of allowed device orientations after exiting fullscreen
-  final List<DeviceOrientation> deviceOrientationsAfterFullScreen;
+  List<DeviceOrientation> deviceOrientationsAfterFullScreen;
 
   /// Defines a custom RoutePageBuilder for the fullscreen
   final ChewieRoutePageBuilder? routePageBuilder;
@@ -617,11 +631,13 @@ class ChewieController extends ChangeNotifier {
   final ValueNotifier<bool>? miniPlayerNotifier;
   final VoidCallback? playFunction;
   final VoidCallback? pauseFunction;
-  bool Function() toggleFullScreenFunction;
+  final bool Function()? toggleFullScreenFunction;
   final VoidCallback? volumeOnFunction;
   final VoidCallback? volumeOffFunction;
+  final VoidCallback? enterFullScreenFunction;
+  final VoidCallback? exitFullScreenFunction;
   final PlayerType playerType;
-
+  final double? innerBottomPadding;
   static ChewieController of(BuildContext context) {
     final chewieControllerProvider =
         context.dependOnInheritedWidgetOfExactType<ChewieControllerProvider>()!;
@@ -671,8 +687,14 @@ class ChewieController extends ChangeNotifier {
     }
   }
 
+  void setSystemOverlaysAfterFullScreen(List<SystemUiOverlay> systemOverlays) {
+    systemOverlaysAfterFullScreen = systemOverlays;
+    notifyListeners();
+  }
+
   void showPlayerControl() {
     _hideStuff = false;
+
     notifyListeners();
   }
 
@@ -693,11 +715,22 @@ class ChewieController extends ChangeNotifier {
 
   void toggleFullScreen() {
     _isFullScreen = !_isFullScreen;
+    if (_isFullScreen) {
+      enterFullScreenFunction?.call();
+    } else {
+      exitFullScreenFunction?.call();
+    }
     notifyListeners();
   }
 
   void togglePause() {
     isPlaying ? pause() : play();
+  }
+
+  void changeDeviceOrientationsAfterFullScreen(
+      List<DeviceOrientation> deviceOrientations) {
+    deviceOrientationsAfterFullScreen = deviceOrientations;
+    notifyListeners();
   }
 
   Future<void> play() async {

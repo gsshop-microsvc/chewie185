@@ -20,7 +20,7 @@ class GsshopLiveProgressBar extends StatelessWidget {
   final ChewieProgressColors colors;
   final Function()? onDragStart;
   final Function()? onDragEnd;
-  final Function()? onDragUpdate;
+  final Function(DragUpdateDetails)? onDragUpdate;
 
   @override
   Widget build(BuildContext context) {

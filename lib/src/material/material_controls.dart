@@ -294,7 +294,7 @@ class _MaterialControlsState extends State<MaterialControls>
     return GestureDetector(
       onTap: () {
         _cancelAndRestartTimer();
-        print('live button _latestValue.volume ${_latestValue.volume}');
+
         if (_latestValue.volume == 0) {
           _latestVolume == 1.0;
           controller.setVolume(1.0);
@@ -525,7 +525,7 @@ class _MaterialControlsState extends State<MaterialControls>
   void _onExpandCollapse() {
     setState(() {
       notifier.hideStuff = true;
-      var isChange = chewieController.toggleFullScreenFunction();
+      var isChange = chewieController.toggleFullScreenFunction!();
       if (isChange) {
         chewieController.toggleFullScreen();
 
@@ -634,7 +634,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
           _hideTimer?.cancel();
         },
-        onDragUpdate: () {
+        onDragUpdate: (details) {
           _hideTimer?.cancel();
         },
         onDragEnd: () {
