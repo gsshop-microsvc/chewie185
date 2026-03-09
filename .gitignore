@@ -49,3 +49,5 @@ build/
 .fvmrc
 # FVM Version Cache
 .fvm/
+.fvmrc
+.fvm/
