@@ -693,9 +693,21 @@ class ChewieController extends ChangeNotifier {
   }
 
   void showPlayerControl() {
+    if (_hideStuff == false) return;
     _hideStuff = false;
 
     notifyListeners();
+  }
+
+  void showPlayerControlSafely() {
+    // Keep internal state aligned even if controls/notifier state is desynced.
+    if (_hideStuff) {
+      showPlayerControl();
+      return;
+    }
+
+    hidePlayerControl();
+    showPlayerControl();
   }
 
   void hidePlayerControl() {
